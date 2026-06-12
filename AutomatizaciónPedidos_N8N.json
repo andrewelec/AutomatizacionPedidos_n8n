@@ -1,0 +1,1044 @@
+{
+  "name": "AutomatizaciónPedidos_N8N",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -320,
+        16
+      ],
+      "id": "16c15388-51e5-4013-8eb0-4ab764739a1d",
+      "name": "Telegram Trigger",
+      "webhookId": "a5457a66-0b46-4a45-9600-2ac5ec72a0fa"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un asistente administrativo que\ninterpreta los pedidos y los mapea contra\nun catálogo de productos.\nDevuelve únicamente un JSON válido, sin explicaciones ni markdown.\n\nCATÁLOGO (SKU | nombre):\nSKU-0001 | Memoria RAM DDR4 8GB 3200MHz\nSKU-0002 | Memoria RAM DDR4 16GB 3200MHz\nSKU-0003 | Memoria RAM DDR5 16GB 5600MHz\nSKU-0004 | SSD NVMe 500GB\nSKU-0005 | SSD NVMe 1TB\nSKU-0006 | SSD SATA 480GB\nSKU-0007 | Disco Duro HDD 2TB\nSKU-0008 | Fuente de Poder 600W 80+ Bronze\nSKU-0009 | Fuente de Poder 750W 80+ Gold\nSKU-0010 | Tarjeta de Video RTX 4060 8GB\nSKU-0011 | Tarjeta de Video RTX 4070 12GB\nSKU-0012 | Procesador Ryzen 5 5600X\nSKU-0013 | Procesador Intel Core i5-13400\nSKU-0014 | Placa Madre B550M\nSKU-0015 | Placa Madre B760M\nSKU-0016 | Ventilador CPU Aire 120mm\nSKU-0017 | Refrigeracion Liquida 240mm\nSKU-0018 | Ventilador Chasis 120mm RGB\nSKU-0019 | Gabinete ATX Mid Tower\nSKU-0020 | Monitor 24'' 144Hz Full HD\nSKU-0021 | Monitor 27'' 165Hz QHD\nSKU-0022 | Teclado Mecanico RGB\nSKU-0023 | Mouse Gaming 16000 DPI\nSKU-0024 | Headset Gaming 7.1\nSKU-0025 | Webcam 1080p\nSKU-0026 | Cable HDMI 2.1 2m\nSKU-0027 | Cable DisplayPort 1.4 2m\nSKU-0028 | Adaptador USB-C a HDMI\nSKU-0029 | Hub USB 3.0 4 Puertos\nSKU-0030 | Pasta Termica 4g\n\nEl cliente podría describir productos\nde forma informal. Tu tarea es\nidentificar a qué SKU del catálogo se\nrefiere cada ítem.\n\nFormato de salida (array de objetos):\n[{\"sku\": \"SKU-XXXX\", \"producto\": \"nombre del catálogo\", \"cantidad\": número, \"confianza\": \"alta|media|baja\", \"ambiguo\": [lista de SKUs si hay varias opciones posibles]}]\n\nReglas:\n- \"cantidad\": entero. Si no se especifica, asume 1.\n- \"sku\": el SKU del catálogo que mejor coincide. Si ninguno coincide, usa null.\n- \"confianza\": \"alta\" si la coincidencia es clara; \"media\" o \"baja\" si hay duda.\n- \"ambiguo\": si la descripción del cliente encaja con varios SKUs (ej. \"RAM 16GB\" → DDR4 y DDR5), lista todos los SKUs candidatos.\n- Si el cliente menciona productos que NO están en el catálogo, devuélvelos igual con \"sku\": null (no los descartes).\n- Devuelve [] ÚNICAMENTE si el mensaje no contiene ninguna intención de pedido (ej. un saludo o pregunta sin productos).\n\nTexto del cliente:\n{{ $json.message.text }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        256,
+        -144
+      ],
+      "id": "4a4f63e1-664f-48cb-ac6a-d2806047880b",
+      "name": "Message a model"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Toma el texto que devolvió Gemini\nlet respuesta = $input.first().json.content.parts[0].text;\n// Limpia posibles ``` o etiquetas markdown que a veces añade el modelo\nrespuesta = respuesta.replace(/```json/g, '').replace(/```/g, '').trim();\n\n// Convierte el texto en JSON real\nconst pedido = JSON.parse(respuesta);\n\n// Devuelve un ítem por cada producto del pedido\nreturn pedido.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -144
+      ],
+      "id": "fc9c1871-5c75-40b4-b8f2-c581ea417bc5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0",
+          "mode": "list",
+          "cachedResultName": "Inventario_Tienda_Hardware",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 391172245,
+          "mode": "list",
+          "cachedResultName": "Inventario",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0/edit#gid=391172245"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        -144
+      ],
+      "id": "bd73c1cd-923a-4d1e-9a09-f67f0eab3866",
+      "name": "Get row(s) in sheet",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QwT45yX9XVdsN7Re",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normaliza números sin importar si vienen con , o . como decimal\nfunction num(valor) {\n  if (valor === null || valor === undefined || valor === '') return 0;\n  // Convierte a texto, quita espacios, y reemplaza coma decimal por punto\n  let s = String(valor).trim();\n  // Si tiene coma como decimal (ej \"1.234,56\" o \"49,9\"), normalizar\n  if (s.includes(',')) {\n    s = s.replace(/\\./g, '').replace(',', '.'); // quita separador de miles, coma→punto\n  }\n  return Number(s) || 0;\n}\n\n// 1. Trae el inventario completo (salida del nodo Google Sheets)\nconst inventario = $('Get row(s) in sheet').all().map(i => i.json);\n\n// 2. Trae el pedido del cliente (salida del nodo Code de parseo)\nconst pedido = $('Code in JavaScript').all().map(i => i.json);\n\n// 3. Para cada producto pedido, cruzar contra el inventario\nconst resultado = pedido.map(item => {\n\n  // CASO AMBIGUO: la IA marcó varias opciones posibles\n  if (item.ambiguo && item.ambiguo.length > 0) {\n    const opciones = item.ambiguo.map(sku =>\n      inventario.find(inv => inv.SKU === sku)\n    ).filter(Boolean);\n    return {\n      json: {\n        estado: 'AMBIGUO',\n        producto_cliente: item.producto,\n        cantidad: item.cantidad,\n        opciones: opciones.map(o => ({\n          sku: o.SKU, nombre: o.Producto, precio: o.Precio_Unitario_USD\n        }))\n      }\n    };\n  }\n\n  // CASO NO EXISTE: la IA no encontró SKU\n  if (!item.sku) {\n    return {\n      json: { estado: 'NO_EXISTE', producto_cliente: item.producto, cantidad: item.cantidad }\n    };\n  }\n\n  // CASO CLARO: buscar el SKU en el inventario\n  const prod = inventario.find(inv => inv.SKU === item.sku);\n\n  if (!prod) {\n    return { json: { estado: 'NO_EXISTE', producto_cliente: item.producto, cantidad: item.cantidad } };\n  }\n\n  // Verificar stock\n  const stockSuficiente = num(prod.Stock_Actual) >= num(item.cantidad);\n\n  return {\n    json: {\n      estado: stockSuficiente ? 'DISPONIBLE' : 'SIN_STOCK',\n      sku: prod.SKU,\n      nombre: prod.Producto,\n      cantidad_pedida: item.cantidad,\n      stock_actual: num(prod.Stock_Actual),\n      precio: num(prod.Precio_Unitario_USD),\n      sustituto_1: prod.Sustituto_1 || null,\n      sustituto_2: prod.Sustituto_2 || null\n    }\n  };\n});\n\nreturn resultado;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -144
+      ],
+      "id": "9c83104f-8553-4b77-9bdc-23ed9190220d",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.estado }}",
+                    "rightValue": "DISPONIBLE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5e6a1df8-f2f6-48a5-8dad-4b9d90d804b7"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b60fe907-4425-485d-8ab5-4d70f3e899b1",
+                    "leftValue": "={{ $json.estado }}",
+                    "rightValue": "SIN_STOCK",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c3fa4507-02fc-4996-ae05-461b7773f1e6",
+                    "leftValue": "={{ $json.estado }}",
+                    "rightValue": "AMBIGUO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1cb8bbaa-5f1f-46d4-a268-31e35deefa0d",
+                    "leftValue": "={{ $json.estado }}",
+                    "rightValue": "NO_EXISTE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        -176
+      ],
+      "id": "3574b990-3c63-42cc-ae63-27fc45eeb8d8",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0",
+          "mode": "list",
+          "cachedResultName": "Inventario_Tienda_Hardware",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1855550515,
+          "mode": "list",
+          "cachedResultName": "Pedidos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0/edit#gid=1855550515"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "SKU": "={{ $('Code in JavaScript1').item.json.sku }}",
+            "Producto": "={{ $('Code in JavaScript1').item.json.nombre }}",
+            "Cantidad": "={{ $('Code in JavaScript1').item.json.cantidad_pedida }}",
+            "Precio_Unitario_USD": "={{ $('Code in JavaScript1').item.json.precio }}",
+            "Subtotal_USD": "={{ $json.precio * $json.cantidad_pedida }}",
+            "Estado_Pedido": "CONFIRMADO"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID_Pedido",
+              "displayName": "ID_Pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cliente_Telegram",
+              "displayName": "Cliente_Telegram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SKU",
+              "displayName": "SKU",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cantidad",
+              "displayName": "Cantidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Precio_Unitario_USD",
+              "displayName": "Precio_Unitario_USD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subtotal_USD",
+              "displayName": "Subtotal_USD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estado_Pedido",
+              "displayName": "Estado_Pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notas",
+              "displayName": "Notas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1568,
+        -576
+      ],
+      "id": "a6c93cf0-e462-4d46-b71a-2d85f96a4684",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QwT45yX9XVdsN7Re",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "=✅ Pedido confirmado: {{ $json.Cantidad }}x{{ $json.Producto}} — Subtotal: ${{ $json.Precio_Unitario_USD * $json.Cantidad }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        -576
+      ],
+      "id": "25ad7052-688a-4613-ba58-0ac8640957c5",
+      "name": "Send a text message",
+      "webhookId": "7d29c20e-95a1-4ce0-bac7-b30dcfdd60ac",
+      "credentials": {
+        "telegramApi": {
+          "id": "WCofT6hxhFG5JfIv",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Inventario completo (para consultar el stock de los sustitutos)\nconst inventario = $('Get row(s) in sheet').all().map(i => i.json);\n\nfunction num(v) {\n  if (v === null || v === undefined || v === '') return 0;\n  let s = String(v).trim();\n  if (s.includes(',')) s = s.replace(/\\./g, '').replace(',', '.');\n  return Number(s) || 0;\n}\n\nconst item = $json;  // producto sin stock que entra a esta rama\n\n// Recoge los SKUs sustitutos (1 y 2) que existan\nconst skusSustitutos = [item.sustituto_1, item.sustituto_2].filter(Boolean);\n\n// Para cada sustituto, busca su info y verifica stock\nconst alternativas = skusSustitutos\n  .map(sku => inventario.find(inv => inv.SKU === sku))\n  .filter(Boolean)\n  .filter(prod => num(prod.Stock_Actual) > 0)   // solo los que tienen stock\n  .map(prod => ({\n    sku: prod.SKU,\n    nombre: prod.Producto,\n    precio: num(prod.Precio_Unitario_USD),\n    stock: num(prod.Stock_Actual)\n  }));\n\nreturn [{\n  json: {\n    estado: 'SIN_STOCK',\n    producto_original: item.nombre,\n    cantidad_pedida: item.cantidad_pedida,\n    stock_disponible: item.stock_actual,\n    hay_alternativas: alternativas.length > 0,\n    alternativas: alternativas\n  }\n}];\n\n\n// Construir botones para cada alternativa con stock\nconst botones = alternativas.map(a => ([{\n  text: `${a.nombre} — $${a.precio}`,\n  callback_data: `SUST|${a.sku}|${item.cantidad_pedida}`\n}]));\n\n// Botón de cancelar\nbotones.push([{ text: '❌ Cancelar', callback_data: 'CANCELAR' }]);\n\nreturn [{\n  json: {\n    estado: 'SIN_STOCK',\n    producto_original: item.nombre,\n    cantidad_pedida: item.cantidad_pedida,\n    stock_disponible: item.stock_actual,\n    hay_alternativas: alternativas.length > 0,\n    alternativas: alternativas,\n    botones: botones   // ← NUEVO: estructura lista para Telegram\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        -336
+      ],
+      "id": "f31ad08f-671a-4f12-bf7f-69c735ae9b8b",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "=⚠️ \"{{ $json.producto_original }}\" no tiene stock suficiente (disponible: {{ $json.stock_disponible }}). {{ $json.hay_alternativas ? 'Elige una alternativa:' : 'No hay alternativas disponibles.' }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.alternativas[0] ? $json.alternativas[0].nombre + ' — $' + $json.alternativas[0].precio : '—' }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.alternativas[0] ? 'SUST|' + $json.alternativas[0].sku + '|' + $json.cantidad_pedida : 'NADA' }}"
+                    }
+                  },
+                  {
+                    "text": "={{ $json.alternativas[1] ? $json.alternativas[1].nombre + ' — $' + $json.alternativas[1].precio : '—' }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.alternativas[1] ? 'SUST|' + $json.alternativas[1].sku + '|' + $json.cantidad_pedida : 'NADA' }}"
+                    }
+                  },
+                  {
+                    "text": "❌ Cancelar",
+                    "additionalFields": {
+                      "callback_data": "CANCELAR"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        -336
+      ],
+      "id": "fefb382f-d6fe-471a-9658-1d54bc5af4b3",
+      "name": "Send a text message1",
+      "webhookId": "d16ffdd0-ff34-4d9d-8e93-f9d11f37cff0",
+      "credentials": {
+        "telegramApi": {
+          "id": "WCofT6hxhFG5JfIv",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ !!$json.callback_query }}",
+                    "rightValue": "mensaje",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    },
+                    "id": "f6354bab-f09e-45bb-a698-bf440f3d25c2"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d33933ea-7e64-4a1e-a071-27166397d7b8",
+                    "leftValue": "={{ !!$json.callback_query }}",
+                    "rightValue": "callback",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": 1
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        16
+      ],
+      "id": "21585a72-e2cb-4d28-aba6-c52ea76b740b",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0",
+          "mode": "list",
+          "cachedResultName": "Inventario_Tienda_Hardware",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 391172245,
+          "mode": "list",
+          "cachedResultName": "Inventario",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0/edit#gid=391172245"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        368
+      ],
+      "id": "140fe93c-2f7d-42fe-916a-e655cdfbb13a",
+      "name": "Get row(s) in sheet1",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QwT45yX9XVdsN7Re",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Telegram Trigger').first().json.callback_query.data;\nfunction num(v){ if(v==null||v==='')return 0; let s=String(v).trim(); if(s.includes(','))s=s.replace(/\\./g,'').replace(',','.'); return Number(s)||0; }\n\nif (data === 'CANCELAR' || data === 'NADA') {\n  return [{ json: {\n    accion: 'CANCELAR',\n    chat_id: $('Telegram Trigger').first().json.callback_query.message.chat.id\n  }}];\n}\n\nconst [accion, sku, cantidad] = data.split('|');\nconst inventario = $input.all().map(i => i.json);\nconst prod = inventario.find(inv => inv.SKU === sku);\n\nreturn [{ json: {\n  accion: 'SUST',\n  sku: prod.SKU,\n  nombre: prod.Producto,\n  cantidad: num(cantidad),\n  precio: num(prod.Precio_Unitario_USD),\n  chat_id: $('Telegram Trigger').first().json.callback_query.message.chat.id\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        368
+      ],
+      "id": "cb2a8593-44a1-4904-a74c-08c9c70b3a60",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0",
+          "mode": "list",
+          "cachedResultName": "Inventario_Tienda_Hardware",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1855550515,
+          "mode": "list",
+          "cachedResultName": "Pedidos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bh4LKs9m0djL2FqqZ0ScDa5IweiSS65mRF3IOyzSsm0/edit#gid=1855550515"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "SKU": "={{ $json.sku }}",
+            "Producto": "={{ $json.nombre }}",
+            "Cantidad": "={{ $json.cantidad }}",
+            "Precio_Unitario_USD": "={{ $json.precio }}",
+            "Subtotal_USD": "={{ $json.precio * $json.cantidad }}",
+            "Estado_Pedido": "CONFIRMADO (SUSTITUTO)",
+            "Cliente_Telegram": "={{ $('Telegram Trigger').first().json.callback_query.from.username }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID_Pedido",
+              "displayName": "ID_Pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cliente_Telegram",
+              "displayName": "Cliente_Telegram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SKU",
+              "displayName": "SKU",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cantidad",
+              "displayName": "Cantidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Precio_Unitario_USD",
+              "displayName": "Precio_Unitario_USD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subtotal_USD",
+              "displayName": "Subtotal_USD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estado_Pedido",
+              "displayName": "Estado_Pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notas",
+              "displayName": "Notas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1456,
+        352
+      ],
+      "id": "59a13cb6-ecae-4e2e-aad9-7ce439795f9b",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QwT45yX9XVdsN7Re",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Code in JavaScript4').first().json.chat_id }}",
+        "text": "=✅ Pedido confirmado con el sustituto: {{ $('Code in JavaScript4').first().json.cantidad }}x {{ $('Code in JavaScript4').first().json.nombre }} — Subtotal: ${{ $('Code in JavaScript4').first().json.precio * $('Code in JavaScript4').first().json.cantidad }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        352
+      ],
+      "id": "317c6a56-c005-44c3-b699-6833582b8eac",
+      "name": "Send a text message2",
+      "webhookId": "e664b25f-11b1-4432-9c9a-f614f8031f8f",
+      "credentials": {
+        "telegramApi": {
+          "id": "WCofT6hxhFG5JfIv",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "=❌ Lo sentimos, \"{{ $json.producto_cliente }}\" no está disponible en nuestro catálogo. Por favor revisa el nombre o consulta nuestra lista de productos disponibles.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        208
+      ],
+      "id": "c1ea8b03-6d80-4986-ab0b-1ccf1346d384",
+      "name": "Send a text message3",
+      "webhookId": "8d75e92b-dc9a-4520-bbae-dda8a5855343",
+      "credentials": {
+        "telegramApi": {
+          "id": "WCofT6hxhFG5JfIv",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7af901c4-5264-4ae1-a94b-2ab2bacc7a33",
+              "leftValue": "={{ $json.accion }}",
+              "rightValue": "SUST",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1168,
+        368
+      ],
+      "id": "2e3ce99f-1458-42ce-aa57-6a1b24facaf8",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=❌ Pedido cancelado. No se creó ninguna orden. Puedes enviarnos un nuevo pedido cuando quieras.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        672
+      ],
+      "id": "2e35bf51-3457-40bb-9e14-b0a8a1722fd4",
+      "name": "Send a text message4",
+      "webhookId": "d4a718f0-016e-417f-8271-4029f4add7ec",
+      "credentials": {
+        "telegramApi": {
+          "id": "WCofT6hxhFG5JfIv",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "=🤔 Para \"{{ $json.producto_cliente }}\" tenemos varias opciones. ¿Cuál prefieres?",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.opciones[0].nombre }} — ${{ $json.opciones[0].precio }}",
+                    "additionalFields": {
+                      "callback_data": "={{ 'SUST|' + $json.opciones[0].sku + '|' + $json.cantidad }}"
+                    }
+                  },
+                  {
+                    "text": "={{ $json.opciones[1] ? $json.opciones[1].nombre + ' — $' + $json.opciones[1].precio : '—' }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.opciones[1] ? 'SUST|' + $json.opciones[1].sku + '|' + $json.cantidad : 'NADA' }}"
+                    }
+                  },
+                  {
+                    "text": "❌ Cancelar",
+                    "additionalFields": {
+                      "callback_data": "CANCELAR"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        -128
+      ],
+      "id": "3cdff127-d7c0-4d74-b5c3-862d48b1c8f7",
+      "name": "Send a text message5",
+      "webhookId": "2567de68-9f8c-4924-b5ac-6c1af13a9277",
+      "credentials": {
+        "telegramApi": {
+          "id": "WCofT6hxhFG5JfIv",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d1ecb730-6b6c-4384-8490-2c49229791dc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fd255ae6055be298a303f281db861e794ded1861c164ca640a91c3341c327137"
+  },
+  "nodeGroups": [],
+  "id": "1gceiXYQOZlw9pzf",
+  "tags": []
+}
