@@ -4,7 +4,7 @@ Automatización con IA para recepción de pedidos en pequeños negocios
 
 ## El problema
 
-En muchos negocios pequeños y medianos —tiendas de repuestos, distribuidoras, ferreterías, minimercados— la toma de pedidos sigue siendo principalmente de forma manual. Un empleado o peor aún, el dueño del negocio recibe los pedidos por WhatsApp, Telegram, llamada o correo, y para cada uno tiene que: leer el mensaje, entender qué producto quiere el cliente (que casi nunca usa el nombre exacto del catálogo), revisar el inventario en una hoja de cálculo, confirmar si hay stock, proponer alternativas cuando no hay, escribir el pedido en otra hoja y, por último, descontar el inventario y vigilar cuándo reponer.
+En muchos negocios pequeños y medianos, tiendas de repuestos, distribuidoras, ferreterías, minimercados, la toma de pedidos sigue siendo principalmente de forma manual. Un empleado o peor aún, el dueño del negocio recibe los pedidos por WhatsApp, Telegram, llamada o correo, y para cada uno tiene que: leer el mensaje, entender qué producto quiere el cliente (que casi nunca usa el nombre exacto del catálogo), revisar el inventario en una hoja de cálculo, confirmar si hay stock, proponer alternativas cuando no hay, escribir el pedido en otra hoja y, por último, descontar el inventario y vigilar cuándo reponer.
 
 Ese empleado o dueño normalmente no hace solo eso: también atiende clientes, gestiona proveedores, responde correos y resuelve imprevistos. La toma de pedidos compite con el resto de sus tareas, se vuelve un cuello de botella, y los errores aparecen: pedidos mal anotados, productos vendidos sin stock real, inventario desactualizado, reposiciones tardías de inventario, demoras en la toma de pedido y pérdida de potenciales clientes.
 
@@ -50,7 +50,6 @@ El flujo recibe los pedidos por Telegram, los interpreta con IA (Gemini) y ejecu
    - **Ambiguo:** cuando el pedido encaja con varios productos (ej. "RAM 16GB": DDR4 o DDR5), se ofrecen las opciones por botones y el cliente decide.
    - **No existe:** se avisa que el producto no está en catálogo.
 5. **Gestión de la conversación.** Las respuestas del cliente (clics en botones) se capturan y reanudan el flujo para cerrar el pedido elegido.
-6. **Actualización de inventario.** Tras cada pedido confirmado, el stock se descuenta automáticamente y, si un producto cae por debajo de su mínimo, se envía una alerta de reposición.
 
 Lo que hace único a este flujo es que no es un simple registro de pedidos: interpreta lenguaje natural, toma decisiones y negocia, todo de forma autónoma.
 
@@ -73,7 +72,7 @@ En un día con, por ejemplo, 20 pedidos, eso son entre 3 y 5 horas dedicadas sol
 
 ## Cuánto ayuda el flujo (ahorro de tiempo y dinero)
 
-Con el flujo automatizado, el tiempo de operación del empleado o dueño por pedido baja de 10–15 minutos a prácticamente cero en los casos estándar, ya que el sistema interpreta, decide, registra y actualiza solo. El empleado o dueño únicamente interviene en excepciones poco frecuentes.
+Con el flujo automatizado, el tiempo de operación del empleado o dueño por pedido baja de 10–15 minutos a prácticamente cero en los casos estándar, ya que el sistema interpreta, decide y registra solo. El empleado o dueño únicamente interviene en excepciones poco frecuentes.
 
 **Ahorro de tiempo estimado**
 
